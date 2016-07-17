@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+  <title>GDP By Country</title>
+<link rel="stylesheet" href="css/GdpByCntry.css"/>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+ <script src="//d3js.org/d3.v3.min.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+<div class="col-lg-6" id="table">
+  <div >
+  <table>
+  </table>
+  </div>
+</div>
+<!-- table container end -->
+<div class="col-lg-6" id="json">
+</div>
+<!-- json container end -->
+</div>
+<!-- end of container table and json -->
+<!-- <div >
+<table>
+</table>
+</div> -->
+<div class="container">
+ <form role="form" class="form-group">
+<input type="text" id="country" placeholder="CountryName" required="required"/><br>
+<input type="text" id="popln" placeholder="Population in million" required="required"/><br>
+              <input type="button" class="" value="Submit" id="submit">
+</form>
+</div>
+<!-- <label><input type="checkbox">population by country</label> -->
+
+<!-- <div class="container">
+<label><input type="checkbox">population by country</label>
+
+  <form role="form">
+    <div class="form-group">
+      <label for="email">Country Name:</label>
+      <input type="text" class="form-control" id="country" placeholder="Enter Country">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Population:</label>
+      <input type="text" class="form-control" id="popln" placeholder="Enter population">
+    </div>
+    <input type="submit" class="btn btn-default" id="submit">Submit</button>
+  </form>
+</div> -->
+
+<script src="js/jquery-3.0.0.js"></script>
+<script>
+(function(){
+  var array=[];
+  $.getJSON("data5.json", function(data1,error){
+      array=data1;
+      console.log(array);
+      dataPlot(array);
+    var tr=$('<tr></tr>');
+    $( 'table' ).append( tr );
+    $.each(array[0], function(key,value){
+      if(key=='Country_Name'|| key== 'Population_Millions_2013')
+      {tr.append( '<th>'+key+'</th>' );}
+    }); //each for data0 end here
+
+    for(i=0;i<array.length;i++){
+      var tr1=$('<tr></tr>');
+      $( 'table' ).append( tr1 );
+      $.each(data1[i],function(key,value){
+        if(key=='Country_Name'|| key== 'Population_Millions_2013'){
+          tr1.append('<td>' + value +'</td>');
+      }
+      }); //each end here
+      var td1=$('<td></td>');
+        var button=$('<button type="submit" value="Submit" >Delete</button>');
+        tr1.append(td1);
+        td1.append(button);
+//  tr1.append('<td>' + $('<button type="submit" value="Submit">Submit</button>')  +'</td>')
+    } //for loop end
+
+
+
+
+    $('table').on("click", "button",function(){
+//      alert("abc");
+      var j = $(this).closest('tr').index();
+      $(this).closest('tr').remove();
+      //alert(j);
+      console.log(j);
+      console.log("obj deltd"+array[j-1].Country_Name);
+      console.log(array);
+      array.splice(j-1,1);
+       //console.log(array);
+      console.log(data1.length);
+      $('#json').empty();
+      dataPlot(array);
+   }); //table end
+
+    $('#submit').on("click",function(){
+        //alert('submit clicked');
+        //e.preventDefault();
+      var countryName=$( '#country' ).val();
+      var popln=$( '#popln' ).val();
+     alert(countryName + popln);
+    //alert(popln);
+      if(countryName==''|| popln==''){
+        alert("please enter the value");
+      } //if completed
+      else{
+        var newdata={Country_Name:countryName,Population_Millions_2013:popln};
+      //  alert(newdata);
+    //  var j = $(this).closest('tr').index();
+        array.push(newdata);
+        // var newarray=array.sort(function (a,b){
+        //   return b.Population_Millions_2013- a.Population_Millions_2013;
+        // });
+        //console.log("old" + JSON.stringify(array));
+        //console.log("new"+JSON.stringify(newarray));
+        //return;
+        $('#json').empty();
+        dataPlot(array);
+        alert(array.length);
+        var tr2=$('<tr></tr>')
+        var td2=$('<td>'+countryName+'</td>');
+        var td3=$('<td>'+popln+'</td>');
+        var button1=$('<button type="submit" value="Submit" >Delete</button>');
+
+
+//write logic to append value n sort order.
+        // alert(parseInt($(td3).attr('val')));
+        $( 'table' ).append( tr2 );
+        tr2.append(td2)
+        .append(td3);
+        var td4=$('<td></td>')
+        tr2.append(td4);
+        td4.append(button1);
+
+        //$.getScript('js/popln.js',function(){
+    //  dataPlot(array);
+
+    }//else completed
+
+}); //onClick submit end
+//dataPlot(array);
+
+
+function dataPlot(data){
+   /////data plotting////
+console.log("In Function plot");
+console.log(data);
+   var margin = {top: 20, right: 20, bottom: 70, left: 40},
+       width = 800 - margin.left - margin.right,
+       height =500 - margin.top - margin.bottom;
+
+   //var formatPercent = d3.format(".0%");
+   // set the ranges
+   var x = d3.scale.ordinal()
+       .rangeRoundBands([0, width], .1, 1);
+
+   var y = d3.scale.linear()
+       .range([height, 0]);
+
+   // define the axis
+   var xAxis = d3.svg.axis()
+       .scale(x)
+       .orient("bottom");
+
+   var yAxis = d3.svg.axis()
+       .scale(y)
+       .orient("left");
+
+   // add the SVG element
+   var svg = d3.select("#json").append("svg")
+       .attr("width", width + margin.left + margin.right)
+       .attr("height", height + margin.top + margin.bottom)
+     .append("g")
+       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+   // load the data
+  // d3.json("data5.json", function(error, data) {
+   data.forEach(function(d) {
+       d.Country_Name = d.Country_Name;
+       d.Population_Millions_2013 = +d.Population_Millions_2013;
+     });
+
+   data.sort(function (a,b){
+     return b.Population_Millions_2013- a.Population_Millions_2013;
+   });
+
+     // scale the range of the data
+     x.domain(data.map(function(d) { return d.Country_Name; }));
+     y.domain([0, d3.max(data, function(d) { return d.Population_Millions_2013; })]);
+
+
+   // add axis
+   //Append our x-axis
+       svg.append("g")
+         .attr("class", "x axis")
+         .attr("transform", "translate(0," + height + ")")
+         .call(xAxis)
+       .selectAll("text")
+         .style("text-anchor", "end")
+         .attr("dx", "-.8em")
+         .attr("dy", "-.55em")
+         .attr("transform", "rotate(-90)" );
+
+     svg.append("g")
+         .attr("class", "y axis")
+         .call(yAxis)
+       .append("text")
+         .attr("transform", "rotate(-90)")
+         .attr("y", 6)
+         .attr("dy", ".71em")
+         .style("text-anchor", "end")
+         .text("Population_Millions_2013");
+   // Add bar chart
+     svg.selectAll(".bar")
+         .data(data)
+       .enter().append("rect")
+         .attr("class", "bar")
+         .attr("x", function(d) { return x(d.Country_Name); })
+         .attr("width", x.rangeBand())
+         .attr("y", function(d) { return y(d.Population_Millions_2013); })
+         .attr("height", function(d) { return height - y(d.Population_Millions_2013); });
+
+
+ }//dataPlot end
+
+
+   }); //getjson function end
+})();
+//main function end
+
+</script>
+
+
+
+
+
+<!-- container end here -->
+
+</body>
+</html>
